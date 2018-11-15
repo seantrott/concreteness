@@ -69,6 +69,7 @@ result = sm.ols(formula="concreteness_impact ~ onset", data=final_df).fit()
 
 
 
+
 ### Shuffling
 shuffled_rsquares = []
 true_rsquare = result.rsquared
