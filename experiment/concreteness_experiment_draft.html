@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Concreteness experiment</title>
+        <script src="jspsych-6.0.1/jspsych.js"></script>
+        <script src="jspsych-6.0.1/plugins/jspsych-html-slider-response.js"></script> 
+        <script src="jspsych-6.0.1/plugins/jspsych-instructions.js"></script> 
+        <script src="jspsych-6.0.1/plugins/jspsych-survey-text.js"></script> 
+        <script src="jspsych-6.0.1/plugins/jspsych-external-html.js"></script> 
+        <script src="jspsych-6.0.1/plugins/jspsych-survey-multi-choice.js"></script> 
+        <script src="jspsych-6.0.1/plugins/jspsych-survey-likert.js"></script> 
+        <script src="jspsych-6.0.1/plugins/jspsych-same-different-html.js"></script> 
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <link href="jspsych-6.0.1/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+    </head>
+    <body></body>
+    <script>
+
+// generate a random subject ID. Should this exclude prior subject ids?
+var subject_id = Math.floor(Math.random()*100000);
+var survey_code = Math.floor(Math.random()*1000000);
+
+// pick a random condition for the subject at the start of the experiment
+var group_assignment = jsPsych.randomization.sampleWithReplacement(['group1', 'group2'],1)[0];
+
+ function saveData(filename, filedata){
+   $.ajax({
+      type:'post',
+      cache: false,
+      url: 'save_data.php', // this is the path to the above PHP script
+      data: {filename: filename, filedata: filedata}
+   });
+}
+
+jsPsych.data.addProperties({
+    subject: subject_id,
+    survey_code: survey_code,
+    group: group_assignment
+})
+
+
+/* TO DO
+1. Generate list of nonwords
+2. Get estimates for mean concreteness (and maybe SD, range, etc.) of phonological neighborhood for each nonword
+3. 
+
+
+
+*/
+
+var prompt_text = "On a scale from 1 (not at all concrete) to 7 (very concrete), how concrete is this word? <br>(Alternatively, can you hear, see, taste, smell, or touch this?) "
+
+var scale_1 = [1, 2, 3, 4, 5, 6, 7];
+
+var instructions = {
+    type: 'instructions',
+    pages: [
+        'Welcome to the experiment!<p>'
+    ],
+    show_clickable_nav: true
+}
+
+var th_on = {
+    type: 'survey-likert',
+    preamble: prompt_text,
+    questions: [{prompt: "thon", 
+                labels: scale_1}],
+    data: {onset: 'th', rest: 'on', orth_length: 4}
+};
+
+
+var debrief = {
+    type: 'survey-text',
+    questions: [{'prompt':'Thanks! What did you think this experiment was about?'}]
+  }
+
+var group1 = jsPsych.randomization.shuffle([th_on])
+var group2 = jsPsych.randomization.shuffle([th_on])
+
+var timeline = []
+
+if (group_assignment == "group1") {
+  timeline  = group1
+} else {2
+  timeline = group2
+}
+
+
+timeline.unshift(instructions)
+timeline.push(debrief)
+
+
+
+ var filename = 'concreteness_pilot_' + subject_id + '.csv'
+
+
+/* start the experiment */
+jsPsych.init({
+    timeline: timeline, 
+    on_finish: function(data){ 
+        saveData(filename, jsPsych.data.get().csv());
+    }
+  });
+    </script>
+</html>

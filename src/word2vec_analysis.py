@@ -66,33 +66,45 @@ for set_index, ms in tqdm(list(enumerate(minimal_sets))):
 	mean_embedding = np.array(by_word_cnc).mean(axis=0)
 	for index, onset in enumerate(letters):
 		difference_vector = by_word_cnc[index] - mean_embedding
-		to_add = [onset, difference_vector, mean_cnc, ms[index], set_index]
+		to_add = [onset, difference_vector, mean_embedding, ms[index], set_index]
 		onset_to_impact.append(to_add)
 
 COLUMNS = ['onset', 'difference_vector', 'set_mean_embedding', 'original_word', 'set_index']
 final_df = pd.DataFrame(onset_to_impact, columns=COLUMNS)
 
 
+final_df = final_df[final_df['onset'] != "Z"]
+
 ### Dimensionality reduction
 onsets = list(final_df['onset'])
-X = list(final_df['difference_vector'])
-
-from sklearn.decomposition import PCA
-
-pca = PCA(n_components=3)
-X_reduced = pca.fit_transform(X)
+vectors = list(final_df['difference_vector'])
 
 
-# First visualization
+# X = pd.get_dummies(pd.Series(onsets))
+# y = vectors
 
-import seaborn as sn 
+X = vectors
+y = onsets
 
-dim1 = [i[0] for i in X_reduced]
-new_df = pd.DataFrame.from_dict({'onset': onsets, 'dimension1': dim1})
+### Analysis
+from sklearn.model_selection import train_test_split
 
-ax = sn.boxplot(data=new_df, x="onset", y="dimension1")
-ax.set(xlabel="Onset phone", ylabel="Impact in dimension 1")
-ax.axhline(y=0, linestyle="dotted")
+from sklearn.svm import LinearSVC 
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.5, random_state=42)
 
 
-result = sm.ols(formula="dimension1 ~ onset", data=new_df).fit()
+clf = LinearSVC()
+clf.fit(X_train, y_train)
+
+
+from sklearn.metrics import f1_score
+
+y_pred = clf.predict(X_train)
+f1_score(y_pred, y_train, average=None)
+
+y_pred = clf.predict(X_test)
+f1_score(y_pred, y_test, average=None)
+
+
