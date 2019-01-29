@@ -1,6 +1,7 @@
 """Generate nonwords beginning with specific onsets.
 
-Info about phonDISC: http://groups.linguistics.northwestern.edu/speech_comm_group/documents/CELEX/Phonetic%20codes%20for%20CELEX.pdf
+Info about phonDISC: 
+http://groups.linguistics.northwestern.edu/speech_comm_group/documents/CELEX/Phonetic%20codes%20for%20CELEX.pdf
 """
 
 import pandas as pd 
